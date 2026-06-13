@@ -8,8 +8,8 @@ class Tank:
         self.direction=direction
         
         self.health=100
-        self.width=40
-        self.height=40
+        self.width=30
+        self.height=30
         self.speed=3
 
         self.last_shot_time=0
