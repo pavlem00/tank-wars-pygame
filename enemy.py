@@ -10,11 +10,12 @@ class Enemy(Tank):
         self.state="wander"
         self.last_seen_x = None
         self.last_seen_y = None
-
+        
         self.hit_wall = False
         self.last_direction_change=0
         self.direction_change_cooldown=1000
     
+        self.combat_direction = None
     #random movement
     def enemy_movement(self, screen_width, screen_height):
         current_time=pygame.time.get_ticks()
@@ -73,7 +74,7 @@ class Enemy(Tank):
     #small AI enemy movement
     def enemy_upgraded_movement(self, player, walls, enemy_bullets, screen_width, screen_height):
         current_time = pygame.time.get_ticks()
-        attack_distance = 100
+        attack_distance = 200
         too_close = 60
         player_in_sight = self.in_sight(player, walls)
         
@@ -113,50 +114,62 @@ class Enemy(Tank):
 
             distance = ((dx**2) + (dy**2)) ** 0.5
 
-            if abs(dx) > abs(dy):
-                if dx > 0:
-                    self.direction = "right"
-                else:
-                    self.direction = "left"
-            else:
-                if dy > 0:
-                    self.direction = "down"
-                else:
-                    self.direction = "up"
-            
-            self.shoot(current_time, enemy_bullets)
-
             if distance > attack_distance:
-                self.move(screen_width, screen_height, walls)
-            elif distance < too_close:
-                if self.direction == "left":
-                    self.direction = "right"
-                elif self.direction == "right":
-                    self.direction = "left"
-                elif self.direction == "down":
-                    self.direction = "up"
-                elif self.direction == "up":
-                    self.direction = "down"
-                self.move(screen_width, screen_height, walls)
-            else:
-                dx = player.x - self.x
-                dy = player.y - self.y
+                self.combat_direction = None
                 if abs(dx) > abs(dy):
-                    line_choices = ["up", "down"]
-                else:
-                    line_choices = ["left", "right"]
-                if random.random() < 0.3:
-                    self.direction = random.choice(line_choices)
-                else:
-                    if self.direction == "up":
-                        self.direction = "down"
-                    elif self.direction == "down":
-                        self.direction = "up"
-                    elif self.direction == "left":
+                    if dx > 0:
                         self.direction = "right"
-                    elif self.direction == "right":
+                    else:
                         self.direction = "left"
+                else:
+                    if dy > 0:
+                        self.direction = "down"
+                    else:
+                        self.direction = "up"
                 self.move(screen_width, screen_height, walls)
+                return
+            
+            if distance < too_close:
+                self.combat_direction = None
+                if abs(dx) > abs(dy):
+                    if dx > 0:
+                        self.direction = "left"
+                    else:
+                        self.direction = "right"
+                else:
+                    if dy > 0:
+                        self.direction = "up"
+                    else:
+                        self.direction = "down"
+                self.move(screen_width, screen_height, walls)
+                return
+            
+            if self.combat_direction is None:
+                if abs(dx) > abs(dy):
+                    self.combat_direction = random.choice(["up", "down"])
+                else:
+                    self.combat_direction = random.choice(["left", "right"])
+
+            self.direction = self.combat_direction
+            self.move(screen_width, screen_height, walls)
+
+            if current_time - self.last_shot_time >= self.shot_cooldown:
+                if abs(dx) > abs(dy):
+                    if dx > 0:
+                        self.direction = "right"
+                    else:
+                        self.direction = "left"
+                else:
+                    if dy > 0:
+                        self.direction = "down"
+                    else:
+                        self.direction = "up"
+                self.shoot(current_time, enemy_bullets)
+                
+                if abs(dx) > abs(dy):
+                    self.combat_direction = random.choice(["up", "down"])
+                else:
+                    self.combat_direction = random.choice(["left", "right"])
         #searching
         elif self.state == "search":
             dx = self.last_seen_x - self.x

@@ -14,7 +14,6 @@ pygame.init()
 screen_width=800
 screen_height=600
 
-
 #Screen and objects draw function
 def draw(screen, player, player_bullets, enemy, enemy_bullets, walls):
     screen.fill((0,100,0))
@@ -70,7 +69,73 @@ def bullet_wall_col(bullets, walls):
                 bullets.remove(bullet)
                 break
 
+#Damage logic helper functions
+##############################
+def hit_distance(dealer, taker):
+    dx = taker.x - dealer.x
+    dy = taker.y - dealer.y
 
+    distance = ((dx**2) + (dy**2)) ** 0.5
+
+    if distance < 100:
+        return "CLOSE"
+    else:
+        return "LONG"
+
+
+def hit_direction(dealer, taker):
+    if dealer.direction == "up":
+        if taker.direction == "left" or taker.direction == "right":
+            return "SIDE"
+        elif taker.direction == "up":
+            return "BACK"
+        else:
+            return "FRONT"
+    elif dealer.direction == "down":
+        if taker.direction == "left" or taker.direction == "right":
+            return "SIDE"
+        elif taker.direction == "down":
+            return "BACK"
+        else:
+            return "FRONT"
+    elif dealer.direction == "left":
+        if taker.direction == "up" or taker.direction == "down":
+            return "SIDE"
+        elif taker.direction == "left":
+            return "BACK"
+        else:
+            return "FRONT"
+    else:
+        if taker.direction == "up" or taker.direction == "down":
+            return "SIDE"
+        elif taker.direction == "right":
+            return "BACK"
+        else:
+            return "FRONT"
+
+def calculate_damage(dealer, taker):
+    if hit_distance(dealer, taker) == "CLOSE":
+        if hit_direction(dealer, taker) == "SIDE":
+            return 30
+        elif hit_direction(dealer, taker) == "FRONT":
+            return 20
+        else:
+            return 50
+    else:
+        if hit_direction(dealer, taker) == "SIDE":
+            return 15
+        elif hit_direction(dealer, taker) == "FRONT":
+            return 10
+        else:
+            return 25
+
+
+def deal_damage(dealer, taker):
+    damage = calculate_damage(dealer, taker)
+    taker.take_damage(damage)
+
+###############################
+    
 def main():
 
     screen=pygame.display.set_mode((screen_width, screen_height))
@@ -142,7 +207,6 @@ def main():
                 enemy.y=old_ey
                 break
 
-    
 
         if player.rect.colliderect(enemy.rect):
             player.x=old_x
@@ -160,12 +224,13 @@ def main():
         
         for bullet in player_bullets[:]:
             if bullet.rect.colliderect(enemy.rect):
-                enemy.health-=25
+                deal_damage(player, enemy)
                 player_bullets.remove(bullet)
 
         
 
         if enemy.health <= 0:
+            enemy.health = 0
             game_result="WIN"
 
 
@@ -174,10 +239,11 @@ def main():
 
         for bullet in enemy_bullets[:]:
             if bullet.rect.colliderect(player.rect):
-                player.health -= 25
+                deal_damage(enemy, player)
                 enemy_bullets.remove(bullet)
 
         if player.health <= 0:
+            player.health = 0
             game_result="LOSS"
 
         draw(screen, player, player_bullets, enemy, enemy_bullets, walls)
