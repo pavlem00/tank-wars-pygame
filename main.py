@@ -4,10 +4,11 @@ from player import Player
 from bullet import Bullet
 from enemy import Enemy
 from wall import Wall
-import random
-from collections import deque
+#import random
+#from collections import deque
 from map_generator import (generate_grid, grid_to_walls, player_spawn, enemy_spawn,
                            grid_size, tank_offset)
+from damage_handle import deal_damage
 pygame.init()
 
 #Screen dimensions
@@ -15,17 +16,18 @@ screen_width=800
 screen_height=600
 
 #Screen and objects draw function
-def draw(screen, player, player_bullets, enemy, enemy_bullets, walls):
-    screen.fill((0,100,0))
-    pygame.draw.rect(screen, (0,0,255), (player.x, player.y, player.width, player.height))
-    pygame.draw.rect(screen, (255,0,0), (enemy.x, enemy.y, enemy.width, enemy.height))
+def draw(screen, player, player_bullets, enemy, enemy_bullets, walls, 
+         grass_img, wall_img, blue_tank_img, red_tank_img):
+    screen.blit(grass_img, (0,0))
+    screen.blit(blue_tank_img, (player.x, player.y))
+    screen.blit(red_tank_img, (enemy.x, enemy.y))
     
     for bullet in player_bullets:
         pygame.draw.rect(screen, (255,255,0), (bullet.x, bullet.y, bullet.width, bullet.height))
     for bullet in enemy_bullets:
         pygame.draw.rect(screen, (255,255,0), (bullet.x, bullet.y, bullet.width, bullet.height))
     for wall in walls:
-        pygame.draw.rect(screen, (78,78,78), wall.rect)
+        screen.blit(wall_img, (wall.rect.x, wall.rect.y))
    
     player_health_text=pygame.font.SysFont('comicsans', 30).render(
         "Player HP: "+ str(player.health), 1, (255,255,255)
@@ -69,78 +71,21 @@ def bullet_wall_col(bullets, walls):
                 bullets.remove(bullet)
                 break
 
-#Damage logic helper functions
-##############################
-def hit_distance(dealer, taker):
-    dx = taker.x - dealer.x
-    dy = taker.y - dealer.y
 
-    distance = ((dx**2) + (dy**2)) ** 0.5
-
-    if distance < 100:
-        return "CLOSE"
-    else:
-        return "LONG"
-
-
-def hit_direction(dealer, taker):
-    if dealer.direction == "up":
-        if taker.direction == "left" or taker.direction == "right":
-            return "SIDE"
-        elif taker.direction == "up":
-            return "BACK"
-        else:
-            return "FRONT"
-    elif dealer.direction == "down":
-        if taker.direction == "left" or taker.direction == "right":
-            return "SIDE"
-        elif taker.direction == "down":
-            return "BACK"
-        else:
-            return "FRONT"
-    elif dealer.direction == "left":
-        if taker.direction == "up" or taker.direction == "down":
-            return "SIDE"
-        elif taker.direction == "left":
-            return "BACK"
-        else:
-            return "FRONT"
-    else:
-        if taker.direction == "up" or taker.direction == "down":
-            return "SIDE"
-        elif taker.direction == "right":
-            return "BACK"
-        else:
-            return "FRONT"
-
-def calculate_damage(dealer, taker):
-    if hit_distance(dealer, taker) == "CLOSE":
-        if hit_direction(dealer, taker) == "SIDE":
-            return 30
-        elif hit_direction(dealer, taker) == "FRONT":
-            return 20
-        else:
-            return 50
-    else:
-        if hit_direction(dealer, taker) == "SIDE":
-            return 15
-        elif hit_direction(dealer, taker) == "FRONT":
-            return 10
-        else:
-            return 25
-
-
-def deal_damage(dealer, taker):
-    damage = calculate_damage(dealer, taker)
-    taker.take_damage(damage)
-
-###############################
     
 def main():
 
     screen=pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("Tank Wars")
-    
+    grass_img = pygame.image.load("pictures/grass.png")
+    grass_img = pygame.transform.scale(grass_img, (screen_width, screen_height))
+    wall_img = pygame.image.load("pictures/wall.png").convert_alpha()
+    wall_img = pygame.transform.scale(wall_img, (40,40))
+    blue_tank_img = pygame.image.load("pictures/blue.png").convert_alpha()
+    blue_tank_img = pygame.transform.scale(blue_tank_img, (40,40))
+    red_tank_img = pygame.image.load("pictures/red.png").convert_alpha()
+    red_tank_img = pygame.transform.scale(red_tank_img, (40,40))
+
     player=Player(player_spawn[0]*grid_size+tank_offset, player_spawn[1]*grid_size+tank_offset)
     enemy=Enemy(enemy_spawn[0]*grid_size+tank_offset, enemy_spawn[1]*grid_size+tank_offset)
     player_bullets=[]
@@ -179,7 +124,7 @@ def main():
         keys_pressed=pygame.key.get_pressed()
         
         if game_result is not None:
-            draw(screen, player, player_bullets, enemy, enemy_bullets, walls)
+            draw(screen, player, player_bullets, enemy, enemy_bullets, walls, grass_img, wall_img, blue_tank_img, red_tank_img)
             draw_result(screen, game_result)
             pygame.display.flip()
             continue
@@ -246,7 +191,8 @@ def main():
             player.health = 0
             game_result="LOSS"
 
-        draw(screen, player, player_bullets, enemy, enemy_bullets, walls)
+        draw(screen, player, player_bullets, enemy, enemy_bullets, walls, 
+             grass_img, wall_img, blue_tank_img, red_tank_img)
         if game_result:
             draw_result(screen, game_result)
 
