@@ -4,6 +4,10 @@ class Bullet:
     def __init__(self, x, y, speed, direction):
         self.x=x
         self.y=y
+
+        self.start_x = x
+        self.start_y = y
+
         self.width=5
         self.height=5
         self.speed=speed
@@ -18,7 +22,7 @@ class Bullet:
             self.x -= self.speed
         if self.direction == "right":
             self.x += self.speed
-    
+            
     @property
     def rect(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)

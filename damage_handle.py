@@ -1,8 +1,7 @@
-import pygame
 
-def hit_distance(dealer, taker):
-    dx = taker.x - dealer.x
-    dy = taker.y - dealer.y
+def hit_distance(bullet):
+    dx = bullet.x - bullet.start_x
+    dy = bullet.y - bullet.start_y
 
     distance = ((dx**2) + (dy**2)) ** 0.5
 
@@ -12,53 +11,37 @@ def hit_distance(dealer, taker):
         return "LONG"
 
 
-def hit_direction(dealer, taker):
-    if dealer.direction == "up":
-        if taker.direction == "left" or taker.direction == "right":
-            return "SIDE"
-        elif taker.direction == "up":
-            return "BACK"
-        else:
-            return "FRONT"
-    elif dealer.direction == "down":
-        if taker.direction == "left" or taker.direction == "right":
-            return "SIDE"
-        elif taker.direction == "down":
-            return "BACK"
-        else:
-            return "FRONT"
-    elif dealer.direction == "left":
-        if taker.direction == "up" or taker.direction == "down":
-            return "SIDE"
-        elif taker.direction == "left":
-            return "BACK"
-        else:
-            return "FRONT"
+def hit_direction(bullet, taker):
+    
+    opposite = {"up" : "down",
+                "down" : "up",
+                "left" : "right",
+                "right" : "left"}
+    
+    if bullet.direction == opposite[taker.direction]:
+        return "FRONT"
+    elif bullet.direction == taker.direction:
+        return "BACK"
     else:
-        if taker.direction == "up" or taker.direction == "down":
-            return "SIDE"
-        elif taker.direction == "right":
-            return "BACK"
-        else:
-            return "FRONT"
+        return "SIDE"
 
-def calculate_damage(dealer, taker):
-    if hit_distance(dealer, taker) == "CLOSE":
-        if hit_direction(dealer, taker) == "SIDE":
+def calculate_damage(bullet, taker):
+    if hit_distance(bullet) == "CLOSE":
+        if hit_direction(bullet, taker) == "SIDE":
             return 30
-        elif hit_direction(dealer, taker) == "FRONT":
+        elif hit_direction(bullet, taker) == "FRONT":
             return 20
         else:
             return 50
     else:
-        if hit_direction(dealer, taker) == "SIDE":
+        if hit_direction(bullet, taker) == "SIDE":
             return 15
-        elif hit_direction(dealer, taker) == "FRONT":
+        elif hit_direction(bullet, taker) == "FRONT":
             return 10
         else:
             return 25
 
 
-def deal_damage(dealer, taker):
-    damage = calculate_damage(dealer, taker)
+def deal_damage(bullet, taker):
+    damage = calculate_damage(bullet, taker)
     taker.take_damage(damage)

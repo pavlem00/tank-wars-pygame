@@ -4,8 +4,6 @@ from player import Player
 from bullet import Bullet
 from enemy import Enemy
 from wall import Wall
-#import random
-#from collections import deque
 from map_generator import (generate_grid, grid_to_walls, player_spawn, enemy_spawn,
                            grid_size, tank_offset)
 from damage_handle import deal_damage
@@ -15,17 +13,46 @@ pygame.init()
 screen_width=800
 screen_height=600
 
+def rotate_img(img, direction):
+    if direction == "up":
+        return img
+    elif direction == "down":
+        return pygame.transform.rotate(img, 180)
+    elif direction == "right":
+        return pygame.transform.rotate(img, -90)
+    elif direction == "left":
+        return pygame.transform.rotate(img, 90)
+    return img
+
+
 #Screen and objects draw function
 def draw(screen, player, player_bullets, enemy, enemy_bullets, walls, 
-         grass_img, wall_img, blue_tank_img, red_tank_img):
+         grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img):
+    
     screen.blit(grass_img, (0,0))
-    screen.blit(blue_tank_img, (player.x, player.y))
-    screen.blit(red_tank_img, (enemy.x, enemy.y))
+    blue_tank = rotate_img(blue_tank_img, player.direction)
+    screen.blit(blue_tank, (player.x, player.y))
+    red_tank = rotate_img(red_tank_img, enemy.direction)
+    screen.blit(red_tank, (enemy.x, enemy.y))
     
     for bullet in player_bullets:
-        pygame.draw.rect(screen, (255,255,0), (bullet.x, bullet.y, bullet.width, bullet.height))
+        bullet_rotate = rotate_img(bullet_img, bullet.direction)
+        
+        bullet_center_x = bullet.x + bullet.width // 2
+        bullet_center_y = bullet.y + bullet.height // 2
+        draw_x = bullet_center_x - bullet_rotate.get_width() // 2
+        draw_y = bullet_center_y - bullet_rotate.get_height() // 2
+
+        screen.blit(bullet_rotate, (draw_x, draw_y))
     for bullet in enemy_bullets:
-        pygame.draw.rect(screen, (255,255,0), (bullet.x, bullet.y, bullet.width, bullet.height))
+        bullet_rotate = rotate_img(bullet_img, bullet.direction)
+
+        bullet_center_x = bullet.x + bullet.width // 2
+        bullet_center_y = bullet.y + bullet.height // 2
+        draw_x = bullet_center_x - bullet_rotate.get_width() // 2
+        draw_y = bullet_center_y - bullet_rotate.get_height() // 2
+
+        screen.blit(bullet_rotate, (bullet.x, bullet.y))
     for wall in walls:
         screen.blit(wall_img, (wall.rect.x, wall.rect.y))
    
@@ -82,15 +109,16 @@ def main():
     wall_img = pygame.image.load("pictures/wall.png").convert_alpha()
     wall_img = pygame.transform.scale(wall_img, (40,40))
     blue_tank_img = pygame.image.load("pictures/blue.png").convert_alpha()
-    blue_tank_img = pygame.transform.scale(blue_tank_img, (40,40))
+    blue_tank_img = pygame.transform.scale(blue_tank_img, (38,38))
     red_tank_img = pygame.image.load("pictures/red.png").convert_alpha()
-    red_tank_img = pygame.transform.scale(red_tank_img, (40,40))
+    red_tank_img = pygame.transform.scale(red_tank_img, (38,38))
+    bullet_img = pygame.image.load("pictures/bullet.png").convert_alpha()
+    bullet_img = pygame.transform.scale(bullet_img, (30, 30))
 
     player=Player(player_spawn[0]*grid_size+tank_offset, player_spawn[1]*grid_size+tank_offset)
     enemy=Enemy(enemy_spawn[0]*grid_size+tank_offset, enemy_spawn[1]*grid_size+tank_offset)
     player_bullets=[]
     enemy_bullets=[]
-    #walls = [Wall(200, 200), Wall(240, 200), Wall(280, 200), Wall(400,100,40,160)]
     grid=generate_grid()
     walls=grid_to_walls(grid)
     clock=pygame.time.Clock()
@@ -124,7 +152,7 @@ def main():
         keys_pressed=pygame.key.get_pressed()
         
         if game_result is not None:
-            draw(screen, player, player_bullets, enemy, enemy_bullets, walls, grass_img, wall_img, blue_tank_img, red_tank_img)
+            draw(screen, player, player_bullets, enemy, enemy_bullets, walls, grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img)
             draw_result(screen, game_result)
             pygame.display.flip()
             continue
@@ -169,7 +197,7 @@ def main():
         
         for bullet in player_bullets[:]:
             if bullet.rect.colliderect(enemy.rect):
-                deal_damage(player, enemy)
+                deal_damage(bullet, enemy)
                 player_bullets.remove(bullet)
 
         
@@ -184,7 +212,7 @@ def main():
 
         for bullet in enemy_bullets[:]:
             if bullet.rect.colliderect(player.rect):
-                deal_damage(enemy, player)
+                deal_damage(bullet, player)
                 enemy_bullets.remove(bullet)
 
         if player.health <= 0:
@@ -192,7 +220,7 @@ def main():
             game_result="LOSS"
 
         draw(screen, player, player_bullets, enemy, enemy_bullets, walls, 
-             grass_img, wall_img, blue_tank_img, red_tank_img)
+             grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img)
         if game_result:
             draw_result(screen, game_result)
 
