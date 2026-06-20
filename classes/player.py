@@ -1,12 +1,12 @@
 import pygame
-from tank import Tank
+from classes.tank import Tank
 
 class Player(Tank):
     def handle_movement(self, keys, screen_width, screen_height):
-        up = keys[pygame.K_w]
-        down = keys[pygame.K_s]
-        left = keys[pygame.K_a]
-        right = keys[pygame.K_d]
+        up = keys[pygame.K_w] or keys[pygame.K_UP]
+        down = keys[pygame.K_s] or keys[pygame.K_DOWN]
+        left = keys[pygame.K_a] or keys[pygame.K_LEFT]
+        right = keys[pygame.K_d] or keys[pygame.K_RIGHT]
 
         pressed = sum([up, down, left, right])
         if pressed != 1:

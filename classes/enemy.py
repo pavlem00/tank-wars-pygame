@@ -1,5 +1,5 @@
 import pygame
-from tank import Tank
+from classes.tank import Tank
 import random
 
 class Enemy(Tank):

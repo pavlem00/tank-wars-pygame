@@ -1,5 +1,5 @@
 import pygame
-from bullet import Bullet
+from classes.bullet import Bullet
 
 class Tank:
     def __init__(self, x, y, direction="up"):

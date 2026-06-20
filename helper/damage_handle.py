@@ -1,4 +1,4 @@
-
+#Helper function to determine the distance from bullet launch to bullet hit
 def hit_distance(bullet):
     dx = bullet.x - bullet.start_x
     dy = bullet.y - bullet.start_y
@@ -10,7 +10,7 @@ def hit_distance(bullet):
     else:
         return "LONG"
 
-
+#Helper function that returns the side of the tank that has been hit
 def hit_direction(bullet, taker):
     
     opposite = {"up" : "down",
@@ -25,6 +25,7 @@ def hit_direction(bullet, taker):
     else:
         return "SIDE"
 
+#Calculating damage based on distance and tank side
 def calculate_damage(bullet, taker):
     if hit_distance(bullet) == "CLOSE":
         if hit_direction(bullet, taker) == "SIDE":

@@ -1,6 +1,6 @@
 from collections import deque
 import random
-from wall import Wall
+from classes.wall import Wall
 
 screen_width=800
 screen_height=600
