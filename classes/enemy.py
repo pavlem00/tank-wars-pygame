@@ -3,8 +3,8 @@ from classes.tank import Tank
 import random
 
 class Enemy(Tank):
-    def __init__(self, x, y):
-        super().__init__(x,y)
+    def __init__(self, x, y, direction = "up"):
+        super().__init__(x,y, direction)
         self.current_movement = random.choice(["up", "down", "left", "right"])
         
         self.state="wander"

@@ -2,8 +2,8 @@ import pygame
 from classes.tank import Tank
 
 class Player(Tank):
-    def __init__(self, x, y, controls):
-        super().__init__(x, y)
+    def __init__(self, x, y, controls, direction = "up"):
+        super().__init__(x, y, direction)
         self.controls = controls
     def handle_movement(self, keys, screen_width, screen_height):
         up = any(keys[key] for key in self.controls["up"])

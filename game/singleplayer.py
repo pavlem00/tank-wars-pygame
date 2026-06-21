@@ -32,8 +32,9 @@ def reset_game():
 
     player = Player(player_spawn[0]*grid_size + tank_offset, 
                     player_spawn[1]*grid_size + tank_offset,
-                    singleplayer_controls)
-    enemy = Enemy(enemy_spawn[0]*grid_size + tank_offset, enemy_spawn[1]*grid_size + tank_offset)
+                    singleplayer_controls,
+                    "up")
+    enemy = Enemy(enemy_spawn[0]*grid_size + tank_offset, enemy_spawn[1]*grid_size + tank_offset, "down")
 
     return player, enemy, walls
 

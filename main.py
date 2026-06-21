@@ -1,15 +1,12 @@
 import pygame
-from classes.tank import Tank
-from classes.player import Player
-from classes.bullet import Bullet
-from classes.enemy import Enemy
-from classes.wall import Wall
+
 from helper.map_generator import (generate_grid, grid_to_walls)
 from helper.damage_handle import deal_damage
 from game.menu import Menu
 from game.singleplayer import singleplayer_game
 from helper.graphics import rotate_img
 from game.multiplayer import multiplayer_game
+from game.tutorial import tutorial_game
 pygame.init()
 
 #Screen dimensions
@@ -91,6 +88,10 @@ def main():
                     elif choice == "Multiplayer":
                         result = multiplayer_game(screen, grass_img, wall_img,
                                                   blue_tank_img, red_tank_img, bullet_img)
+                        if result == "QUIT":
+                            run = False
+                    elif choice == "Tutorial":
+                        result = tutorial_game(screen, grass_img, blue_tank_img, red_tank_img)
                         if result == "QUIT":
                             run = False
                     elif choice == "Quit":
