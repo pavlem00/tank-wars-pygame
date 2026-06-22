@@ -58,10 +58,6 @@ def main():
     bullet_img = pygame.image.load("pictures/bullet.png").convert_alpha()
     bullet_img = pygame.transform.scale(bullet_img, (30, 30))
 
-    
-
-
-
     run = True
     result=None
     while run:
