@@ -17,7 +17,7 @@ class Tank:
 
     def shoot(self, current_time, bullets):
         if current_time - self.last_shot_time < self.shot_cooldown:
-            return
+            return False
         if self.direction == "up":
             bullets.append(Bullet(self.x+self.width//2, self.y, 5, self.direction))
         elif self.direction == "down":
@@ -27,6 +27,7 @@ class Tank:
         elif self.direction == "right":
             bullets.append(Bullet(self.x+self.width, self.y+self.height//2, 5, self.direction))
         self.last_shot_time=current_time
+        return True
     
     def take_damage(self, damage):
         self.health -= damage

@@ -8,7 +8,7 @@ from helper.graphics import rotate_img
 from game.multiplayer import multiplayer_game
 from game.tutorial import tutorial_game
 pygame.init()
-
+pygame.mixer.init()
 #Screen dimensions
 screen_width=800
 screen_height=600
@@ -25,9 +25,9 @@ def draw_menu(screen, menu, grass_img, blue_tank_img, red_tank_img):
     screen.blit(title, (screen_width//2-title.get_width()//2, 50))
     screen.blit(red_menu_tank, (screen_width//2-title.get_width()//2-60,50))
     screen.blit(blue_menu_tank, (screen_width//2+title.get_width()//2,50))
+   
     option_font = pygame.font.SysFont("arial", 40)
     option_y = 180
-
     i = 0
     for option in menu.options:
         if i == menu.selected:
@@ -57,12 +57,26 @@ def main():
     red_tank_img = pygame.transform.scale(red_tank_img, (40,40))
     bullet_img = pygame.image.load("pictures/bullet.png").convert_alpha()
     bullet_img = pygame.transform.scale(bullet_img, (30, 30))
+     
+    shoot_sound = pygame.mixer.Sound("sounds/shot.wav")
+    hit_sound = pygame.mixer.Sound("sounds/hit.wav")
+    victory_sound = pygame.mixer.Sound("sounds/win.wav")
+    defeat_sound = pygame.mixer.Sound("sounds/gameover.wav")
+    start_sound = pygame.mixer.Sound("sounds/opener.wav")
+    shoot_sound.set_volume(0.5)
+    hit_sound.set_volume(0.5)
+    victory_sound.set_volume(0.5)
+    defeat_sound.set_volume(0.5)
+    start_sound.set_volume(0.5)
+
+    pygame.mixer.music.load("sounds/gameplay.mp3")
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1) 
 
     run = True
     result=None
     while run:
         draw_menu(screen, menu, grass_img, blue_tank_img, red_tank_img)
-
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -77,13 +91,18 @@ def main():
                     choice = menu.get_selected()
 
                     if choice == "Singleplayer":
+                        start_sound.play()
                         result = singleplayer_game(screen, grass_img, wall_img,
-                                                    blue_tank_img, red_tank_img, bullet_img)
+                                                    blue_tank_img, red_tank_img, bullet_img,
+                                                    shoot_sound, hit_sound,
+                                                    victory_sound, defeat_sound)
                         if result == "QUIT":
                             run = False
                     elif choice == "Multiplayer":
+                        start_sound.play()
                         result = multiplayer_game(screen, grass_img, wall_img,
-                                                  blue_tank_img, red_tank_img, bullet_img)
+                                                  blue_tank_img, red_tank_img, bullet_img,
+                                                  shoot_sound, hit_sound, victory_sound)
                         if result == "QUIT":
                             run = False
                     elif choice == "Tutorial":

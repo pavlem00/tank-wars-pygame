@@ -78,6 +78,8 @@ class Enemy(Tank):
         too_close = 60
         player_in_sight = self.in_sight(player, walls)
         
+        shot_fired = False
+
         if self.hit_wall:
             self.state = "wander"
             self.direction = random.choice(["up", "down", "right", "left"])
@@ -164,7 +166,7 @@ class Enemy(Tank):
                         self.direction = "down"
                     else:
                         self.direction = "up"
-                self.shoot(current_time, enemy_bullets)
+                shot_fired = self.shoot(current_time, enemy_bullets)
                 
                 if abs(dx) > abs(dy):
                     self.combat_direction = random.choice(["up", "down"])
@@ -194,3 +196,4 @@ class Enemy(Tank):
 
         
             self.move(screen_width, screen_height, walls)
+        return shot_fired

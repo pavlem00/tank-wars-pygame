@@ -40,7 +40,7 @@ def reset_game():
 
 
 
-def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img):
+def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img, shoot_sound, hit_sound, victory_sound, defeat_sound):
     clock = pygame.time.Clock()
 
     player, enemy, walls = reset_game()
@@ -49,7 +49,7 @@ def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, 
     enemy_bullets = []
 
     game_result = None
-
+    result_sound_played = False
     while True:
         clock.tick(60)
 
@@ -58,6 +58,8 @@ def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, 
                 return "QUIT"
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
+                    result_sound_played = False
+                    pygame.mixer.music.play(-1)
                     return "MENU"
                 if event.key == pygame.K_r:
                     player, enemy, walls = reset_game()
@@ -66,9 +68,12 @@ def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, 
                     enemy_bullets.clear()
 
                     game_result = None
+                    result_sound_played = False
+                    pygame.mixer.music.play(-1)
                 if event.key == pygame.K_SPACE:
                     current_time = pygame.time.get_ticks()
-                    player.shoot(current_time, player_bullets)
+                    if player.shoot(current_time, player_bullets):
+                        shoot_sound.play()
         if game_result is None:
             keys_pressed = pygame.key.get_pressed()
 
@@ -86,7 +91,8 @@ def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, 
             old_ex=enemy.x
             old_ey=enemy.y
 
-            enemy.enemy_upgraded_movement(player, walls, enemy_bullets, screen_width, screen_height)
+            if enemy.enemy_upgraded_movement(player, walls, enemy_bullets, screen_width, screen_height):
+                shoot_sound.play()
             for wall in walls:
                 if enemy.rect.colliderect(wall.rect):
                     enemy.x=old_ex
@@ -107,6 +113,7 @@ def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, 
 
             for bullet in player_bullets[:]:
                 if bullet.rect.colliderect(enemy.rect):
+                    hit_sound.play()
                     deal_damage(bullet, enemy)
                     player_bullets.remove(bullet)
             
@@ -116,16 +123,24 @@ def singleplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, 
 
             for bullet in enemy_bullets[:]:
                 if bullet.rect.colliderect(player.rect):
+                    hit_sound.play()
                     deal_damage(bullet, player)
                     enemy_bullets.remove(bullet)
 
             if player.health <= 0:
                 player.health = 0
                 game_result="LOSS"
+            
+            if game_result and not result_sound_played:
+                pygame.mixer.music.stop()
+                if game_result == "WIN":
+                    victory_sound.play()
+                else:
+                    defeat_sound.play()
+                result_sound_played = True
 
         draw(screen, player, player_bullets, enemy, enemy_bullets, walls, 
                 grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img, text1, text2)
         if game_result:
                 draw_result(screen, game_result, text3, text4)
         pygame.display.flip()
-            

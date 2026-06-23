@@ -46,7 +46,7 @@ def reset_game():
     return player1, player2, walls
 
 
-def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img):
+def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img, shoot_sound, hit_sound, victory_sound):
     clock = pygame.time.Clock()
 
     player1, player2, walls = reset_game()
@@ -55,7 +55,7 @@ def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, b
     player2_bullets = []
 
     game_result = None
-
+    result_sound_played = False
     while True:
         clock.tick(60)
 
@@ -64,6 +64,8 @@ def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, b
                 return "QUIT"
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
+                    result_sound_played = False
+                    pygame.mixer.music.play(-1)
                     return "MENU"
                 if event.key == pygame.K_r:
                     player1, player2, walls = reset_game()
@@ -72,12 +74,16 @@ def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, b
                     player2_bullets.clear()
 
                     game_result = None
+                    result_sound_played = False
+                    pygame.mixer.music.play(-1)
                 if event.key == pygame.K_BACKSPACE:
                     current_time = pygame.time.get_ticks()
-                    player1.shoot(current_time, player1_bullets)
+                    if player1.shoot(current_time, player1_bullets):
+                        shoot_sound.play()
                 if event.key == pygame.K_SPACE:
                     current_time = pygame.time.get_ticks()
-                    player2.shoot(current_time, player2_bullets)
+                    if player2.shoot(current_time, player2_bullets):
+                        shoot_sound.play()
         if game_result is None:
             keys_pressed = pygame.key.get_pressed()
 
@@ -117,6 +123,7 @@ def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, b
 
             for bullet in player1_bullets[:]:
                 if bullet.rect.colliderect(player2.rect):
+                    hit_sound.play()
                     deal_damage(bullet, player2)
                     player1_bullets.remove(bullet)
             
@@ -126,6 +133,7 @@ def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, b
 
             for bullet in player2_bullets[:]:
                 if bullet.rect.colliderect(player1.rect):
+                    hit_sound.play()
                     deal_damage(bullet, player1)
                     player2_bullets.remove(bullet)
 
@@ -133,6 +141,10 @@ def multiplayer_game(screen, grass_img, wall_img, blue_tank_img, red_tank_img, b
                 player1.health = 0
                 game_result="LOSS"
 
+            if game_result and not result_sound_played:
+                pygame.mixer.music.stop()
+                victory_sound.play()
+                result_sound_played = True
         draw(screen, player1, player1_bullets, player2, player2_bullets, walls, 
                 grass_img, wall_img, blue_tank_img, red_tank_img, bullet_img, text1, text2)
         if game_result:
